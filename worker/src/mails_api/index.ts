@@ -1,9 +1,8 @@
-import { Hono } from 'hono'
+import { Context, Hono } from 'hono'
 
 import i18n from '../i18n';
-import { HonoCustomType } from "../types";
 import { getBooleanValue, getJsonSetting, checkCfTurnstile, getStringValue, getSplitStringListValue } from '../utils';
-import { newAddress, handleListQuery, deleteAddressWithData, getAddressPrefix, getAllowDomains } from '../common'
+import { newAddress, handleListQuery, deleteAddressWithData, getAddressPrefix, getAllowDomains, updateAddressUpdatedAt } from '../common'
 import { CONSTANTS } from '../constants'
 import auto_reply from './auto_reply'
 import webhook_settings from './webhook_settings';
@@ -27,6 +26,7 @@ api.get('/api/mails', async (c) => {
         return c.json({ "error": "No address" }, 400)
     }
     const { limit, offset } = c.req.query();
+    if (Number.parseInt(offset) <= 0) await updateAddressUpdatedAt(c, address);
     return await handleListQuery(c,
         `SELECT * FROM raw_mails where address = ?`,
         `SELECT count(*) as count FROM raw_mails where address = ?`,
@@ -90,14 +90,9 @@ api.get('/api/settings', async (c) => {
     } catch (error) {
         return c.text(msgs.InvalidAddressMsg, 400)
     }
-    // update address updated_at
-    try {
-        c.env.DB.prepare(
-            `UPDATE address SET updated_at = datetime('now') where name = ?`
-        ).bind(address).run();
-    } catch (e) {
-        console.warn("Failed to update address")
-    }
+
+    await updateAddressUpdatedAt(c, address);
+
     const no_limit_roles = getSplitStringListValue(c.env.NO_LIMIT_SEND_ROLE);
     const is_no_limit_send_balance = user_role && no_limit_roles.includes(user_role);
     const balance = is_no_limit_send_balance ? 99999 : await c.env.DB.prepare(

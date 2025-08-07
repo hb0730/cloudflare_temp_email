@@ -1,10 +1,10 @@
-export type UserRole = {
+type UserRole = {
     domains: string[] | undefined | null,
     role: string,
     prefix: string | undefined | null
 }
 
-export type Bindings = {
+type Bindings = {
     // bindings
     DB: D1Database
     KV: KVNamespace
@@ -16,6 +16,7 @@ export type Bindings = {
     DEFAULT_LANG: string | undefined
     TITLE: string | undefined
     ANNOUNCEMENT: string | undefined | null
+    ALWAYS_SHOW_ANNOUNCEMENT: string | boolean | undefined
     PREFIX: string | undefined
     ADDRESS_CHECK_REGEX: string | undefined
     ADDRESS_REGEX: string | undefined
@@ -51,6 +52,8 @@ export type Bindings = {
 
     ENABLE_ANOTHER_WORKER: string | boolean | undefined
     ANOTHER_WORKER_LIST: string | AnotherWorker[] | undefined
+
+    SUBDOMAIN_FORWARD_ADDRESS_LIST: string | SubdomainForwardAddressList[] | undefined
 
     REMOVE_ALL_ATTACHMENT: string | boolean | undefined
     REMOVE_EXCEED_SIZE_ATTACHMENT: string | boolean | undefined
@@ -128,4 +131,9 @@ type ParsedEmailContext = {
         html: string,
         headers?: Record<string, string>[]
     } | undefined
+}
+
+type SubdomainForwardAddressList = {
+    domains: string[] | undefined | null,
+    forward: string,
 }

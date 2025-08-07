@@ -1,6 +1,5 @@
 import { Context } from "hono";
 import { createMimeMessage } from "mimetext";
-import { HonoCustomType, UserRole, AnotherWorker } from "./types";
 
 export const getJsonObjectValue = <T = any>(
     value: string | any
@@ -295,4 +294,28 @@ export const checkUserPassword = (password: string) => {
         throw new Error("Invalid password")
     }
     return true;
+}
+
+export default {
+    getJsonObjectValue,
+    getSetting,
+    saveSetting,
+    getStringValue,
+    getSplitStringListValue,
+    getBooleanValue,
+    getIntValue,
+    getStringArray,
+    getDefaultDomains,
+    getDomains,
+    getUserRoles,
+    getAnotherWorkerList,
+    getPasswords,
+    getAdminPasswords,
+    getEnvStringList,
+    sendAdminInternalMail,
+    checkCfTurnstile,
+    checkUserPassword,
+    getJsonSetting,
+    getJsonValue: getJsonObjectValue,
+    getStringList: getStringArray
 }

@@ -25,7 +25,7 @@ const apiFetch = async (path, options = {}) => {
             data: options.body || null,
             headers: {
                 'x-lang': i18n.global.locale.value,
-                'x-user-token': userJwt.value,
+                'x-user-token': options.userJwt || userJwt.value,
                 'x-user-access-token': userSettings.value.access_token,
                 'x-custom-auth': auth.value,
                 'x-admin-auth': adminAuth.value,
@@ -89,7 +89,11 @@ const getOpenSettings = async (message, notification) => {
         if (openSettings.value.needAuth) {
             showAuth.value = true;
         }
-        if (openSettings.value.announcement && openSettings.value.announcement != announcement.value) {
+        if (openSettings.value.announcement
+            && !openSettings.value.fetched
+            && (openSettings.value.announcement != announcement.value
+                || openSettings.value.alwaysShowAnnouncement)
+        ) {
             announcement.value = openSettings.value.announcement;
             notification.info({
                 content: () => {
@@ -139,6 +143,19 @@ const getUserSettings = async (message) => {
         if (!userJwt.value) return;
         const res = await api.fetch("/user_api/settings")
         Object.assign(userSettings.value, res)
+        // auto refresh user jwt
+        if (userSettings.value.new_user_token) {
+            try {
+                await api.fetch("/user_api/settings", {
+                    userJwt: userSettings.value.new_user_token,
+                })
+                userJwt.value = userSettings.value.new_user_token;
+                console.log("User JWT updated successfully");
+            }
+            catch (error) {
+                console.error("Failed to update user JWT", error);
+            }
+        }
     } catch (error) {
         message?.error(error.message || "error");
     } finally {

@@ -1,7 +1,6 @@
 import { Context } from "hono";
 
 import i18n from "../i18n";
-import { HonoCustomType } from "../types";
 import { UserOauth2Settings, UserSettings } from "../models";
 import { getJsonSetting, getUserRoles } from "../utils"
 import { CONSTANTS } from "../constants";
@@ -55,10 +54,31 @@ export default {
             // 1 hour
             exp: Math.floor(Date.now() / 1000) + 3600,
         }, c.env.JWT_SECRET, "HS256") : null;
+        // create new if expired in 7 days
+        const new_user_token = user.exp > (
+            Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+        ) ? null : await Jwt.sign({
+            user_email: user.user_email,
+            user_id: user.user_id,
+            // 30 days expire in seconds
+            exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+            iat: Math.floor(Date.now() / 1000),
+        }, c.env.JWT_SECRET, "HS256");
+        // update address updated_at
+        try {
+            await c.env.DB.prepare(
+                `UPDATE address SET updated_at = datetime('now') where id IN `
+                + `(SELECT address_id FROM users_address WHERE user_id = ?)`
+            ).bind(user.user_id).run();
+
+        } catch (e) {
+            console.warn("Failed to update address updated_at")
+        }
         return c.json({
             ...user,
             is_admin: is_admin,
             access_token: access_token,
+            new_user_token: new_user_token,
             user_role: user_role
         });
     },

@@ -2,8 +2,7 @@ import { Context } from 'hono';
 import { Jwt } from 'hono/utils/jwt'
 
 import i18n from '../i18n';
-import { HonoCustomType } from '../types';
-import { getJsonSetting } from '../utils';
+import { getJsonSetting, getStringValue, getUserRoles } from '../utils';
 import { UserOauth2Settings } from '../models';
 import { CONSTANTS } from '../constants';
 
@@ -38,6 +37,7 @@ export default {
             client_id: setting.clientID,
             client_secret: setting.clientSecret,
             grant_type: 'authorization_code',
+            redirect_uri: setting.redirectURL,
         }
         const res = await fetch(setting.accessTokenURL, {
             method: 'POST',
@@ -110,12 +110,29 @@ export default {
         if (!user_id) {
             return c.text(msgs.UserNotFoundMsg, 400)
         }
+        // process user roles
+        const defaultRole = getStringValue(c.env.USER_DEFAULT_ROLE);
+        if (defaultRole) {
+            const user_roles = getUserRoles(c);
+            if (!user_roles.find((r) => r.role === defaultRole)) {
+                return c.text(msgs.InvalidUserDefaultRoleMsg, 500);
+            }
+            // update user roles
+            const { success: success2 } = await c.env.DB.prepare(
+                `INSERT INTO user_roles (user_id, role_text)`
+                + ` VALUES (?, ?)`
+                + ` ON CONFLICT(user_id) DO NOTHING`
+            ).bind(user_id, defaultRole).run();
+            if (!success2) {
+                return c.text(msgs.FailedUpdateUserDefaultRoleMsg, 500);
+            }
+        }
         // create jwt
         const jwt = await Jwt.sign({
             user_email: email,
             user_id: user_id,
             // 90 days expire in seconds
-            exp: Math.floor(Date.now() / 1000) + 90 * 24 * 60 * 60,
+            exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
             iat: Math.floor(Date.now() / 1000),
         }, c.env.JWT_SECRET, "HS256")
         return c.json({

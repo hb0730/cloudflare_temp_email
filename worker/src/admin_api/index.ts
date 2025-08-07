@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { Jwt } from 'hono/utils/jwt'
 
 import i18n from '../i18n'
-import { HonoCustomType } from '../types'
 import { sendAdminInternalMail, getJsonSetting, saveSetting, getUserRoles } from '../utils'
 import { newAddress, handleListQuery } from '../common'
 import { CONSTANTS } from '../constants'
@@ -12,7 +11,9 @@ import webhook_settings from './webhook_settings'
 import mail_webhook_settings from './mail_webhook_settings'
 import oauth2_settings from './oauth2_settings'
 import worker_config from './worker_config'
+import admin_mail_api from './admin_mail_api'
 import { sendMailbyAdmin } from './send_mail'
+import db_api from './db_api'
 
 export const api = new Hono<HonoCustomType>()
 
@@ -101,54 +102,10 @@ api.get('/admin/show_password/:id', async (c) => {
     })
 })
 
-api.get('/admin/mails', async (c) => {
-    const { address, limit, offset, keyword } = c.req.query();
-    if (address && keyword) {
-        return await handleListQuery(c,
-            `SELECT * FROM raw_mails where address = ? and raw like ? `,
-            `SELECT count(*) as count FROM raw_mails where address = ? and raw like ? `,
-            [address, `%${keyword}%`], limit, offset
-        );
-    } else if (keyword) {
-        return await handleListQuery(c,
-            `SELECT * FROM raw_mails where raw like ? `,
-            `SELECT count(*) as count FROM raw_mails where raw like ? `,
-            [`%${keyword}%`], limit, offset
-        );
-    } else if (address) {
-        return await handleListQuery(c,
-            `SELECT * FROM raw_mails where address = ? `,
-            `SELECT count(*) as count FROM raw_mails where address = ? `,
-            [address], limit, offset
-        );
-    } else {
-        return await handleListQuery(c,
-            `SELECT * FROM raw_mails `,
-            `SELECT count(*) as count FROM raw_mails `,
-            [], limit, offset
-        );
-    }
-});
-
-api.get('/admin/mails_unknow', async (c) => {
-    const { limit, offset } = c.req.query();
-    return await handleListQuery(c,
-        `SELECT * FROM raw_mails where address NOT IN (select name from address) `,
-        `SELECT count(*) as count FROM raw_mails`
-        + ` where address NOT IN (select name from address) `,
-        [], limit, offset
-    );
-});
-
-api.delete('/admin/mails/:id', async (c) => {
-    const { id } = c.req.param();
-    const { success } = await c.env.DB.prepare(
-        `DELETE FROM raw_mails WHERE id = ? `
-    ).bind(id).run();
-    return c.json({
-        success: success
-    })
-})
+// mail api
+api.get('/admin/mails', admin_mail_api.getMails);
+api.get('/admin/mails_unknow', admin_mail_api.getUnknowMails);
+api.delete('/admin/mails/:id', admin_mail_api.deleteMail)
 
 api.get('/admin/address_sender', async (c) => {
     const { address, limit, offset } = c.req.query();
@@ -348,3 +305,8 @@ api.get("/admin/worker/configs", worker_config.getConfig);
 
 // send mail by admin
 api.post("/admin/send_mail", sendMailbyAdmin);
+
+// db api
+api.get('admin/db_version', db_api.getVersion);
+api.post('admin/db_initialize', db_api.initialize);
+api.post('admin/db_migration', db_api.migrate);

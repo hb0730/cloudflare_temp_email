@@ -10,10 +10,12 @@ export const useGlobalState = createGlobalState(
         const toggleDark = useToggle(isDark)
         const loading = ref(false);
         const announcement = useLocalStorage('announcement', '');
+        const useSimpleIndex = useLocalStorage('useSimpleIndex', false);
         const openSettings = ref({
             fetched: false,
             title: '',
             announcement: '',
+            alwaysShowAnnouncement: false,
             prefix: '',
             addressRegex: '',
             needAuth: false,
@@ -92,6 +94,8 @@ export const useGlobalState = createGlobalState(
             is_admin: false,
             /** @type {string | null} */
             access_token: null,
+            /** @type {string | null} */
+            new_user_token: null,
             /** @type {null | {domains: string[] | undefined | null, role: string, prefix: string | undefined | null}} */
             user_role: null,
         });
@@ -139,6 +143,7 @@ export const useGlobalState = createGlobalState(
             showAdminPage,
             userOauth2SessionState,
             userOauth2SessionClientID,
+            useSimpleIndex,
         }
     },
 )

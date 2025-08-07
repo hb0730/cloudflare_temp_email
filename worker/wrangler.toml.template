@@ -25,6 +25,8 @@ compatibility_flags = [ "nodejs_compat" ]
 # DEFAULT_LANG = "zh"
 # TITLE = "Custom Title" # custom title
 # ANNOUNCEMENT = "Custom Announcement"
+# always show ANNOUNCEMENT even no changes
+# ALWAYS_SHOW_ANNOUNCEMENT = true
 PREFIX = "tmp"
 # address check REGEX, if not set, will not check
 # ADDRESS_CHECK_REGEX = "^(?!.*admin).*"
@@ -80,6 +82,13 @@ ENABLE_AUTO_REPLY = false
 # TG_BOT_INFO = "{}"
 # global forward address list, if set, all emails will be forwarded to these addresses
 # FORWARD_ADDRESS_LIST = ["xxx@xxx.com"]
+# subdomain forward address list, if set, subdomain emails will be forwarded to these addresses
+# SUBDOMAIN_FORWARD_ADDRESS_LIST = """
+# [
+#     {"domains":[""],"forward":"xxx1@xxx.com"},
+#     {"domains":["subdomain-1.domain.com","subdomain-2.domain.com"],"forward":"xxx2@xxx.com"}
+# ]
+# """
 # Frontend URL
 # FRONTEND_URL = "https://xxxx.xxx"
 # Enable check junk mail
