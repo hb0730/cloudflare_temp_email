@@ -1,6 +1,24 @@
 <!-- markdownlint-disable-file MD004 MD024 MD034 MD036 -->
 # CHANGE LOG
 
+## main(v1.0.6)
+
+- feat: |DB| update db schema add index
+
+## v1.0.5
+
+- feat: 新增 `DISABLE_CUSTOM_ADDRESS_NAME` 配置: 禁用自定义邮箱地址名称功能
+- feat: 新增 `CREATE_ADDRESS_DEFAULT_DOMAIN_FIRST` 配置: 创建地址时优先使用第一个域名
+- feat: |UI| 主页增加进入极简模式按钮
+- feat: |Webhook| 增加白名单开关功能，支持灵活控制访问权限
+
+## v1.0.4
+
+- feat: |UI| 优化极简模式主页, 增加全部邮件页面功能(删除/下载/附件/...), 可在 `外观` 中切换
+- feat: admin 账号设置页面增加 `邮件转发规则` 配置
+- feat: admin 账号设置页面增加 `禁止接收未知地址邮件` 配置
+- feat: 邮件页面增加 上一封/下一封 按钮
+
 ## v1.0.3
 
 - fix: 修复 github actions 部署问题

@@ -14,9 +14,11 @@ export type Passkey = {
 };
 
 export class AdminWebhookSettings {
+    enableAllowList: boolean;
     allowList: string[];
 
-    constructor(allowList: string[]) {
+    constructor(enableAllowList: boolean, allowList: string[]) {
+        this.enableAllowList = enableAllowList;
         this.allowList = allowList;
     }
 }
@@ -144,4 +146,9 @@ export type UserOauth2Settings = {
     scope: string;
     enableMailAllowList?: boolean | undefined;
     mailAllowList?: string[] | undefined;
+}
+
+export type EmailRuleSettings = {
+    blockReceiveUnknowAddressEmail: boolean;
+    emailForwardingList: SubdomainForwardAddressList[]
 }
